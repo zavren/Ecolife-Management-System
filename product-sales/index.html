@@ -1,1 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecolife System | Product Sales</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
+:root{
+  --bg:#060D06;
+  --bg-card:#0C160C;
+  --bg-input:#0F1A0F;
+  --sidebar-bg:#080F08;
+  --topbar-bg:#0A120A;
+  --green:#00E676;
+  --green-dim:#00C853;
+  --green-glow:rgba(0,230,118,0.08);
+  --green-border:rgba(0,230,118,0.18);
+  --green-border-strong:rgba(0,230,118,0.35);
+  --white:#E8F5E9;
+  --gray:#6B8F71;
+  --gray-dim:#3D5E42;
+  --text:#C8E6C9;
+  --text-dim:#8BAD8F;
+  --error:#FF5252;
+  --sidebar-w:240px;
+}
+
+html,body{height:100%;font-family:'Inter',sans-serif;color:var(--text);background:var(--bg)}
+
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 10% 10%,rgba(0,230,118,0.05) 0%,transparent 50%),radial-gradient(ellipse at 90% 90%,rgba(0,200,83,0.06) 0%,transparent 50%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,230,118,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,230,118,0.02) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--green-border);display:flex;flex-direction:column;z-index:100;transition:transform 0.3s}
+.sidebar-brand{padding:22px 20px 18px;border-bottom:1px solid var(--green-border);display:flex;align-items:center;gap:12px}
+.sidebar-brand img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:1.5px solid var(--green-border-strong);flex-shrink:0;box-shadow:0 0 12px rgba(0,230,118,0.15)}
+.brand-text{font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:var(--green);letter-spacing:0.06em;line-height:1.2}
+.brand-text span{display:block;font-weight:500;font-size:10px;color:var(--gray);letter-spacing:0.1em;text-transform:uppercase}
+.sidebar-nav{flex:1;padding:14px 0;overflow-y:auto}
+.nav-section-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--gray-dim);padding:10px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 20px;cursor:pointer;color:var(--text-dim);font-size:15px;font-weight:500;transition:all 0.2s;border-left:2px solid transparent;text-decoration:none}
+.nav-item:hover{background:var(--green-glow);color:var(--white)}
+.nav-item.active{background:rgba(0,230,118,0.08);color:var(--green);border-left-color:var(--green)}
+.nav-icon{width:17px;height:17px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sidebar-footer{padding:14px 20px;border-top:1px solid var(--green-border)}
+.user-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:rgba(0,230,118,0.1);border:1px solid var(--green-border-strong);display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:var(--green);flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:14px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:10px;color:var(--gray);letter-spacing:0.08em;text-transform:uppercase}
+.btn-signout{width:100%;padding:8px;background:rgba(255,82,82,0.06);border:1px solid rgba(255,82,82,0.15);border-radius:7px;color:rgba(255,130,130,0.7);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-signout:hover{background:rgba(255,82,82,0.12);border-color:rgba(255,82,82,0.3);color:#FF8A80}
+
+.topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:60px;background:var(--topbar-bg);border-bottom:1px solid var(--green-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:90;gap:12px}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;color:var(--gray)}
+.menu-toggle svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.page-title{font-family:'Montserrat',sans-serif;font-weight:800;font-size:16px;color:var(--white);letter-spacing:0.04em}
+.btn-print{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:rgba(0,230,118,0.08);color:var(--green);font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;border-radius:7px;border:1px solid var(--green-border-strong);cursor:pointer;transition:all 0.2s;letter-spacing:0.04em;text-transform:uppercase}
+.btn-print:hover{background:rgba(0,230,118,0.15)}
+.btn-print svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.main{margin-left:var(--sidebar-w);padding-top:60px;min-height:100vh;position:relative;z-index:1}
+.main-inner{padding:24px}
+
+/* FILTER CARD */
+.filter-card{background:var(--bg-card);border:1px solid var(--green-border);border-radius:10px;padding:18px 20px;margin-bottom:24px}
+.filter-card-title{font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.filter-group{display:flex;flex-direction:column;gap:5px;min-width:130px}
+.filter-group label{font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em}
+.filter-select,.filter-date{padding:9px 12px;border:1px solid var(--green-border);border-radius:7px;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--text);background:var(--bg-input);outline:none;cursor:pointer;transition:border-color 0.2s;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236B8F71' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:28px}
+.filter-date{background-image:none;padding-right:12px}
+.filter-select:focus,.filter-date:focus{border-color:var(--green-dim)}
+.btn-apply{padding:9px 20px;background:linear-gradient(135deg,#00C853,#00A846);color:#050D05;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;border:none;border-radius:7px;cursor:pointer;transition:all 0.2s;white-space:nowrap;align-self:flex-end;text-transform:uppercase;letter-spacing:0.04em}
+.btn-apply:hover{background:linear-gradient(135deg,#00E676,#00C853);box-shadow:0 4px 14px rgba(0,200,83,0.3)}
+
+/* SUMMARY */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.sum-card{background:var(--bg-card);border:1px solid var(--green-border);border-radius:10px;padding:16px;position:relative;overflow:hidden;transition:all 0.2s}
+.sum-card:hover{border-color:var(--green-border-strong);box-shadow:0 0 16px rgba(0,230,118,0.07)}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green-dim),transparent);opacity:0.5}
+.sum-label{font-size:10px;color:var(--text-dim);font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.sum-value{font-family:'Montserrat',sans-serif;font-weight:800;font-size:24px;color:var(--white);line-height:1}
+.sum-sub{font-size:11px;color:var(--gray);margin-top:4px}
+
+/* REPORT SECTIONS */
+.report-section{background:var(--bg-card);border:1px solid var(--green-border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.report-section-header{padding:14px 20px;border-bottom:1px solid var(--green-border);display:flex;align-items:center;justify-content:space-between}
+.report-section-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:var(--white);letter-spacing:0.04em}
+.report-count{font-size:11px;color:var(--text-dim);font-weight:500}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:500px}
+thead th{background:rgba(0,230,118,0.04);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);padding:11px 16px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--green-border)}
+tbody tr{border-bottom:1px solid rgba(0,230,118,0.06);transition:background 0.15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--green-glow)}
+tbody td{padding:12px 16px;font-size:15px;color:var(--text);vertical-align:middle}
+.td-name{font-weight:600;color:var(--white)}
+.td-amount{font-family:'Montserrat',sans-serif;font-weight:700;color:var(--white)}
+.td-balance{font-family:'Montserrat',sans-serif;font-weight:700;color:#FF8A80}
+.td-balance.clear{color:var(--green)}
+.td-rank{font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:var(--green);width:32px}
+
+.progress-wrap{display:flex;align-items:center;gap:8px}
+.progress-bar-bg{flex:1;height:5px;background:rgba(0,230,118,0.1);border-radius:3px;overflow:hidden;min-width:50px}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--green-dim),var(--green));border-radius:3px;transition:width 0.4s}
+.progress-pct{font-size:11px;color:var(--text-dim);font-weight:600;white-space:nowrap}
+
+.status-badge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;white-space:nowrap}
+.status-badge.pending{background:rgba(251,183,36,0.1);color:#FBB724;border:1px solid rgba(251,183,36,0.2)}
+.status-badge.assigned{background:rgba(59,130,246,0.1);color:#60A5FA;border:1px solid rgba(59,130,246,0.2)}
+.status-badge.completed{background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.2)}
+.status-badge.paid{background:rgba(0,200,83,0.15);color:#69F0AE;border:1px solid rgba(0,200,83,0.25)}
+.status-badge.completed-awaiting-verification{background:rgba(96,165,250,0.12);color:#60A5FA;border:1px solid rgba(96,165,250,0.25)}
+.status-badge.resolved{background:rgba(0,230,118,0.15);color:var(--green);border:1px solid rgba(0,230,118,0.3)}
+.status-badge.lost{background:rgba(255,82,82,0.1);color:#FF8A80;border:1px solid rgba(255,82,82,0.25)}
+.status-badge.pending-deduction{background:rgba(251,146,60,0.12);color:#FB923C;border:1px solid rgba(251,146,60,0.28)}
+.status-badge.deducted{background:rgba(192,132,252,0.12);color:#C084FC;border:1px solid rgba(192,132,252,0.28)}
+.status-badge.waived{background:rgba(148,163,184,0.12);color:#94A3B8;border:1px solid rgba(148,163,184,0.25)}
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--green-border);gap:10px;flex-wrap:wrap}
+.pagination-info{font-size:12px;color:var(--text-dim)}
+.pagination-btns{display:flex;gap:6px;flex-wrap:wrap}
+.page-btn{padding:6px 12px;border:1px solid var(--green-border);border-radius:6px;font-size:12px;font-weight:600;color:var(--text-dim);background:transparent;cursor:pointer;transition:all 0.2s}
+.page-btn:hover:not(:disabled){border-color:var(--green-border-strong);color:var(--green)}
+.page-btn:disabled{opacity:0.35;cursor:not-allowed}
+.page-btn.active{background:var(--green-dim);color:#050D05;border-color:var(--green-dim)}
+.pen-actions{display:flex;gap:6px;flex-wrap:nowrap}
+.pen-btn{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;background:rgba(0,230,118,0.08);color:var(--green);border:1px solid var(--green-border-strong);transition:all 0.2s}
+.pen-btn:hover{background:rgba(0,230,118,0.16)}
+.pen-btn.waive{background:rgba(148,163,184,0.1);color:#94A3B8;border-color:rgba(148,163,184,0.3)}
+.pen-btn.waive:hover{background:rgba(148,163,184,0.2)}
+.pen-btn.pend{background:rgba(251,146,60,0.1);color:#FB923C;border-color:rgba(251,146,60,0.3)}
+.pen-btn.pend:hover{background:rgba(251,146,60,0.2)}
+
+.empty-row td{text-align:center;color:var(--gray);padding:32px;font-size:14px}
+
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99}
+
+@media print{
+  .sidebar,.topbar,.filter-card,.sidebar-overlay,.btn-print,.menu-toggle{display:none!important}
+  .main{margin-left:0;padding-top:0;background:#fff}
+  .main-inner{padding:0}
+  body{background:#fff;color:#111}
+  .report-section{break-inside:avoid;border:1px solid #ccc;margin-bottom:16px;background:#fff}
+  .summary-grid{grid-template-columns:repeat(4,1fr)}
+  thead th{background:#f3f4f6;color:#374151}
+  tbody td{color:#111}
+  .td-name,.td-amount{color:#111}
+  .sum-value{color:#111}
+}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-overlay.show{display:block}
+  .topbar{left:0}
+  .main{margin-left:0}
+  .menu-toggle{display:flex}
+  .main-inner{padding:16px}
+  .filter-row{gap:8px}
+  .filter-group{min-width:110px}
+}
+@media print{.pagination,.pen-col-action{display:none!important}}
+body.tech-mode .sidebar,body.tech-mode .sidebar-overlay{display:none!important}
+body.tech-mode .topbar{left:0}
+body.tech-mode .main{margin-left:0}
+body.tech-mode .menu-toggle{display:none}
+body.tech-mode .admin-only{display:none!important}
+body:not(.tech-mode) .tech-only{display:none!important}
+.set-wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.set-card{background:var(--bg-card);border:1px solid var(--green-border);border-radius:12px;overflow:hidden}
+.set-head{padding:14px 20px;border-bottom:1px solid var(--green-border)}
+.set-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:var(--white);letter-spacing:0.04em}
+.set-desc{font-size:12px;color:var(--text-dim);margin-top:4px;line-height:1.5}
+.set-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.f-group{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f-group label{font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em}
+.f-input{padding:10px 12px;border:1px solid var(--green-border);border-radius:7px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);background:var(--bg-input);outline:none;width:100%}
+.f-input:focus{border-color:var(--green-dim)}
+.f-input[readonly]{opacity:0.7}
+.f-hint{font-size:11.5px;color:var(--text-dim);line-height:1.5}
+.s-btn{padding:10px 18px;background:linear-gradient(135deg,#00C853,#00A846);color:#050D05;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;border:none;border-radius:7px;cursor:pointer;align-self:flex-start}
+.s-btn:disabled{opacity:0.5;cursor:default}
+.s-btn.alt{background:rgba(0,230,118,0.08);color:var(--green);border:1px solid var(--green-border-strong)}
+.s-btn.sm{padding:6px 12px;font-size:11px}
+.s-btn.warn{background:rgba(255,82,82,0.08);color:#FF8A80;border:1px solid rgba(255,82,82,0.3)}
+.s-actions{display:flex;gap:8px;flex-wrap:wrap}
+.prof-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.avatar-lg{width:84px;height:84px;border-radius:50%;background:rgba(0,230,118,0.1) center/cover no-repeat;border:2px solid var(--green-border-strong);display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:800;font-size:30px;color:var(--green);flex-shrink:0}
+.b-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid rgba(0,230,118,0.08);flex-wrap:wrap}
+.b-row:last-child{border-bottom:none}
+.b-name{font-weight:600;color:var(--white);font-size:14px}
+.b-badge{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:rgba(0,230,118,0.1);color:var(--green);border:1px solid var(--green-border)}
+.b-badge.off{background:rgba(148,163,184,0.1);color:#94A3B8;border-color:rgba(148,163,184,0.25)}
+.b-add{display:flex;gap:8px;margin-top:6px}
+.b-add .f-input{flex:1}
+.sw-row{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.sw{position:relative;width:46px;height:26px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#26402A;border-radius:26px;cursor:pointer;transition:0.2s}
+.sw span::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#C8E6C9;border-radius:50%;transition:0.2s}
+.sw input:checked+span{background:var(--green-dim)}
+.sw input:checked+span::before{transform:translateX(20px)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(0,230,118,0.08);font-size:14px}
+.kv:last-child{border-bottom:none}
+.kv b{color:var(--white)}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#0C160C;border:1px solid var(--green-border-strong);color:var(--white);padding:11px 18px;border-radius:9px;font-size:13px;z-index:999;opacity:0;pointer-events:none;transition:opacity 0.25s;max-width:90vw;text-align:center}
+#toast.show{opacity:1}
+#toast.err{border-color:rgba(255,82,82,0.5);color:#FF8A80}
+@media(max-width:600px){.f-row{grid-template-columns:1fr}}
+.status-badge.pending-approval{background:rgba(251,183,36,0.1);color:#FBB724;border:1px solid rgba(251,183,36,0.2)}
+.status-badge.approved{background:rgba(0,230,118,0.12);color:var(--green);border:1px solid rgba(0,230,118,0.3)}
+.status-badge.rejected{background:rgba(255,82,82,0.1);color:#FF8A80;border:1px solid rgba(255,82,82,0.25)}
+.ps-bar{height:8px;background:rgba(0,230,118,0.1);border-radius:5px;overflow:hidden;position:relative;min-width:90px}
+.ps-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;display:block}
+.ps-bar i.pend{background:rgba(251,183,36,0.45)}
+.ps-bar i.ok{background:linear-gradient(90deg,var(--green-dim),var(--green))}
+.ps-kpi-top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.ps-kpi-big{font-family:'Montserrat',sans-serif;font-weight:800;font-size:26px;color:var(--white)}
+.ps-mini{font-size:12px;color:var(--text-dim)}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg-card);border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;border:1px solid var(--green-border)}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--green-border);font-family:'Montserrat',sans-serif;font-weight:700;color:var(--white);font-size:15px}
+.modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--green-border);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.m-item span{display:block;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:2px}
+.m-item b{color:var(--white);font-weight:500;font-size:14px;word-break:break-word}
+.s-btn.ok{background:linear-gradient(135deg,#00C853,#00A846)}
+.s-btn.no{background:rgba(255,82,82,0.12);color:#FF8A80;border:1px solid rgba(255,82,82,0.35)}
+tbody tr.clickable{cursor:pointer}
+@media(max-width:600px){.m-grid{grid-template-columns:1fr}}
+body:not(.role-ready) main{visibility:hidden}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <img src="https://res.cloudinary.com/hztm3zo8/image/upload/v1782422764/FB_IMG_1781877214514_qq7dt6.jpg" alt="Ecolife">
+    <div class="brand-text">ECOLIFE <span>Operations System</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a class="nav-item" href="../dashboard/">
+      <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="../bookings/">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Bookings
+    </a>
+    <a class="nav-item" href="../new-booking/">
+      <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      New Booking
+    </a>
+    <div class="nav-section-label">Management</div>
+    <a class="nav-item" href="../technicians/">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Technicians
+    </a>
+    <a class="nav-item" href="../earnings/">
+      <svg class="nav-icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Earnings
+    </a>
+    <a class="nav-item active" href="../product-sales/">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Product Sales
+    </a>
+    <a class="nav-item" href="../reports/">
+      <svg class="nav-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reports
+    </a>
+    <a class="nav-item" href="../settings/">
+      <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-avatar" id="userAvatar">E</div>
+      <div class="user-info">
+        <div class="user-name" id="userName">Loading...</div>
+        <div class="user-role">Admin</div>
+      </div>
+    </div>
+    <button class="btn-signout" id="signOutBtn">
+      <svg style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+</aside>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <button class="menu-toggle" id="menuToggle">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <span class="page-title">Product Sales</span>
+  </div>
+  <a class="btn-print tech-only" href="../technician-view/" style="text-decoration:none">Back to My Jobs</a>
+  <button class="btn-print admin-only" onclick="window.print()">Print</button>
+</div>
+
+<main class="main">
+  <div class="main-inner">
+
+    <!-- ===== TECHNICIAN ===== -->
+    <div class="set-wrap tech-only" style="margin-bottom:18px">
+      <div class="set-card">
+        <div class="set-head"><div class="set-title">My Monthly Target</div><div class="set-desc" id="myMonthLabel"></div></div>
+        <div class="set-body">
+          <div class="ps-kpi-top">
+            <div><div class="ps-kpi-big" id="myApproved">KES 0</div><div class="ps-mini">approved of KES <span class="tgt">7,000</span> target</div></div>
+            <div style="text-align:right"><div class="ps-kpi-big" style="font-size:20px" id="myPct">0%</div><div class="ps-mini" id="myPending"></div></div>
+          </div>
+          <div class="ps-bar"><i class="pend" id="myBarPend"></i><i class="ok" id="myBarOk"></i></div>
+        </div>
+      </div>
+
+      <div class="set-card">
+        <div class="set-head"><div class="set-title">Record a Product Sale</div><div class="set-desc">Your sale stays Pending Approval until the admin verifies it.</div></div>
+        <div class="set-body">
+          <div class="f-row">
+            <div class="f-group"><label>Customer Name *</label><input class="f-input" id="fCust" maxlength="60" placeholder="Full name"></div>
+            <div class="f-group"><label>Customer Phone *</label><input class="f-input" id="fPhone" type="tel" maxlength="20" placeholder="07XX XXX XXX"></div>
+          </div>
+          <div class="f-row">
+            <div class="f-group"><label>Service / Job Reference *</label><input class="f-input" id="fJob" list="jobRefs" maxlength="40" placeholder="e.g. JOB-1A2B3C"><datalist id="jobRefs"></datalist></div>
+            <div class="f-group"><label>Date of Sale *</label><input class="f-input" id="fDate" type="date"></div>
+          </div>
+          <div class="f-row">
+            <div class="f-group"><label>Product *</label>
+              <select class="f-input" id="fProduct"><option value="">Select product</option></select>
+            </div>
+            <div class="f-group"><label>Quantity *</label><input class="f-input" id="fQty" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
+          </div>
+          <div class="f-row">
+            <div class="f-group"><label>Total Amount (KES)</label><input class="f-input" id="fTotal" readonly value="0"><span class="f-hint">Calculated from the retail price.</span></div>
+            <div class="f-group"><label>Technician</label><input class="f-input" id="fTech" readonly></div>
+          </div>
+          <button class="s-btn" id="submitSale" type="button">Submit for Approval</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-section tech-only">
+      <div class="report-section-header"><span class="report-section-title">My Product Sales</span><span class="report-count" id="myCount"></span></div>
+      <div class="table-scroll"><table style="min-width:760px">
+        <thead><tr><th>Date</th><th>Customer</th><th>Job Ref</th><th>Product</th><th>Qty</th><th>Total (KES)</th><th>Status</th><th>Admin Remarks</th></tr></thead>
+        <tbody id="myBody"><tr class="empty-row"><td colspan="8">Loading...</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <!-- ===== ADMIN ===== -->
+    <div class="admin-only">
+      <div class="filter-card">
+        <div class="filter-card-title">Filter Product Sales</div>
+        <div class="filter-row">
+          <div class="filter-group"><label>Month</label><input class="filter-date" type="month" id="aMonth"></div>
+          <div class="filter-group"><label>Region / Branch</label>
+            <select class="filter-select" id="aBranch"><option value="all">All Branches</option><option>Nairobi</option><option>Nakuru</option><option>Eldoret</option><option>Mombasa</option><option>Kisumu</option><option>Kitale</option><option>Ecolife</option></select></div>
+          <div class="filter-group"><label>Technician</label><select class="filter-select" id="aTech"><option value="all">All Technicians</option></select></div>
+          <div class="filter-group"><label>Status</label>
+            <select class="filter-select" id="aStatus"><option value="all">All Statuses</option><option>Pending Approval</option><option>Approved</option><option>Rejected</option></select></div>
+          <button class="btn-apply" id="aAll" type="button" style="background:rgba(0,230,118,0.08);color:#00E676;border:1px solid rgba(0,230,118,0.35)">All Time</button>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="sum-card"><div class="sum-label">Products Sold</div><div class="sum-value" id="sUnits">0</div><div class="sum-sub">Approved units</div></div>
+        <div class="sum-card"><div class="sum-label">Sales Generated (KES)</div><div class="sum-value" id="sAmt" style="color:var(--green)">0</div><div class="sum-sub">Approved sales</div></div>
+        <div class="sum-card"><div class="sum-label">Pending Approval</div><div class="sum-value" id="sPend" style="color:#FBB724">0</div><div class="sum-sub" id="sPendAmt"></div></div>
+        <div class="sum-card"><div class="sum-label">Approved</div><div class="sum-value" id="sApp">0</div><div class="sum-sub">Sales records</div></div>
+        <div class="sum-card"><div class="sum-label">Rejected</div><div class="sum-value" id="sRej" style="color:#FF8A80">0</div><div class="sum-sub">Sales records</div></div>
+        <div class="sum-card"><div class="sum-label">Target Met</div><div class="sum-value" id="sMet">0</div><div class="sum-sub" id="sMetSub"></div></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-header"><span class="report-section-title">Pending Approval</span><span class="report-count" id="queueCount"></span></div>
+        <div class="table-scroll"><table style="min-width:900px">
+          <thead><tr><th>Date</th><th>Technician</th><th>Customer</th><th>Job Ref</th><th>Product</th><th>Qty</th><th>Total (KES)</th><th>Action</th></tr></thead>
+          <tbody id="queueBody"><tr class="empty-row"><td colspan="8">Loading...</td></tr></tbody>
+        </table></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-header"><span class="report-section-title">Sales and KPI per Technician</span><span class="report-count" id="kpiCount"></span></div>
+        <div class="f-hint" style="padding:12px 20px 0">Progress counts approved sales against the KES <span class="tgt">7,000</span> monthly target for the selected month. Pending sales show lighter.</div>
+        <div class="table-scroll"><table style="min-width:900px">
+          <thead><tr><th>Technician</th><th>Branch</th><th>Units</th><th>Approved (KES)</th><th>Pending (KES)</th><th>Rejected</th><th>Target Progress</th></tr></thead>
+          <tbody id="kpiBody"><tr class="empty-row"><td colspan="7">Loading...</td></tr></tbody>
+        </table></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-header"><span class="report-section-title">Monthly Product Sales Performance</span><span class="report-count">Last 6 months</span></div>
+        <div class="table-scroll"><table style="min-width:640px">
+          <thead><tr><th>Month</th><th>Units (approved)</th><th>Approved (KES)</th><th>Pending (KES)</th><th>Sales Records</th><th>Trend</th></tr></thead>
+          <tbody id="monthBody"><tr class="empty-row"><td colspan="6">Loading...</td></tr></tbody>
+        </table></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-header"><span class="report-section-title">Sales by Product</span></div>
+        <div class="table-scroll"><table style="min-width:520px">
+          <thead><tr><th>Product</th><th>Retail Price</th><th>Units (approved)</th><th>Sales (KES)</th></tr></thead>
+          <tbody id="prodBody"></tbody>
+        </table></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-header"><span class="report-section-title">All Product Sales</span><span class="report-count" id="allCount"></span></div>
+        <div class="table-scroll"><table style="min-width:1000px">
+          <thead><tr><th>Date</th><th>Technician</th><th>Customer</th><th>Phone</th><th>Job Ref</th><th>Product</th><th>Qty</th><th>Total (KES)</th><th>Status</th><th>Remarks</th></tr></thead>
+          <tbody id="allBody"><tr class="empty-row"><td colspan="10">Loading...</td></tr></tbody>
+        </table></div>
+        <div class="pagination"><span class="pagination-info" id="allInfo"></span><div class="pagination-btns" id="allBtns"></div></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="modal-bg" id="revModal">
+  <div class="modal">
+    <div class="modal-header">Review Product Sale</div>
+    <div class="modal-body">
+      <div class="m-grid" id="revGrid"></div>
+      <div class="f-group"><label>Remarks / Comments</label><textarea class="f-input" id="revRemarks" rows="3" maxlength="300" placeholder="Optional note for the technician"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="s-btn alt" id="revClose" type="button">Close</button>
+      <button class="s-btn no" id="revReject" type="button">Reject</button>
+      <button class="s-btn ok" id="revApprove" type="button">Approve</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBxi76PxDat-G5bjcUQ2MmPe0mGcTE-izs",
+    authDomain: "ecolife-system-ff2d6.firebaseapp.com",
+    databaseURL: "https://ecolife-system-ff2d6-default-rtdb.firebaseio.com",
+    projectId: "ecolife-system-ff2d6",
+    storageBucket: "ecolife-system-ff2d6.firebasestorage.app",
+    messagingSenderId: "421807560122",
+    appId: "1:421807560122:web:877a49223b03ba4a477983"
+  };
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const ADMIN_EMAIL = 'ecolifepestguard@gmail.com';
+  const TARGET = 7000;
+  const PRODUCTS = [
+    { name:'Ecolife Bugman Roach Gel', price:300 },
+    { name:'Ecolife BedGuard™ Cream', price:1000 }
+  ];
+  const PENDING = 'Pending Approval', APPROVED = 'Approved', REJECTED = 'Rejected';
+
+  let me = { user:null, isAdmin:false, tech:null };
+  let sales = [], techs = [];
+  let active = null;
+  let allPage = 1;
+  const PER = 15;
+  const $ = id => document.getElementById(id);
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function kes(v){ return Math.round(parseFloat(v)||0).toLocaleString('en-KE'); }
+  function num(v){ return parseFloat(v)||0; }
+  function fDate(v){ if(!v) return '--'; const d = new Date(v); return isNaN(d) ? v : d.toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}); }
+  function ymNow(){ const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+  function ymLabel(ym){ const d = new Date(ym+'-01T00:00:00'); return isNaN(d) ? ym : d.toLocaleDateString('en-KE',{month:'long',year:'numeric'}); }
+  function todayISO(){ const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function badge(st){ const c = st===APPROVED ? 'approved' : st===REJECTED ? 'rejected' : 'pending-approval'; return '<span class="status-badge '+c+'">'+esc(st||PENDING)+'</span>'; }
+  function toast(msg, err){ const t = $('toast'); t.textContent = msg; t.className = 'show'+(err?' err':''); clearTimeout(toast._t); toast._t = setTimeout(() => { t.className = ''; }, 3200); }
+  function jobRef(id){ return 'JOB-'+String(id).slice(0,6).toUpperCase(); }
+  document.querySelectorAll('.tgt').forEach(e => { e.textContent = kes(TARGET); });
+
+  $('menuToggle').addEventListener('click', () => { $('sidebar').classList.toggle('open'); $('overlay').classList.toggle('show'); });
+  $('overlay').addEventListener('click', () => { $('sidebar').classList.remove('open'); $('overlay').classList.remove('show'); });
+  $('signOutBtn').addEventListener('click', async () => { await signOut(auth); window.location.href = '../'; });
+
+  onAuthStateChanged(auth, async (user) => {
+    if(!user){ window.location.href = '../'; return; }
+    me.user = user;
+    me.isAdmin = user.email === ADMIN_EMAIL;
+    try{
+      const ts = await getDocs(collection(db,'technicians'));
+      techs = ts.docs.map(d => ({ id:d.id, ...d.data() }));
+    }catch(e){ console.error(e); }
+    if(!me.isAdmin){
+      me.tech = techs.find(t => t.email === user.email) || null;
+      if(!me.tech){ window.location.href = '../'; return; }
+      document.body.classList.add('tech-mode');
+    }
+    $('userAvatar').textContent = user.email.charAt(0).toUpperCase();
+    $('userName').textContent = user.email.split('@')[0];
+    document.body.classList.add('role-ready');
+    if(me.isAdmin) await startAdmin(); else await startTech();
+  });
+
+  /* ================= TECHNICIAN ================= */
+  async function startTech(){
+    PRODUCTS.forEach(p => { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name+' (KES '+kes(p.price)+')'; $('fProduct').appendChild(o); });
+    $('fTech').value = me.tech.name || '';
+    $('fDate').value = todayISO();
+    $('myMonthLabel').textContent = ymLabel(ymNow());
+    ['fProduct','fQty'].forEach(id => { $(id).addEventListener('input', calcTotal); $(id).addEventListener('change', calcTotal); });
+    $('submitSale').addEventListener('click', submitSale);
+    try{
+      const bs = await getDocs(collection(db,'bookings'));
+      const dl = $('jobRefs');
+      bs.docs.filter(d => d.data().technicianAssigned === me.tech.name).slice(0,200).forEach(d => {
+        const o = document.createElement('option'); o.value = jobRef(d.id); o.label = d.data().clientName || ''; dl.appendChild(o);
+      });
+    }catch(e){ console.error(e); }
+    await loadMine();
+  }
+  function calcTotal(){
+    const p = PRODUCTS.find(x => x.name === $('fProduct').value);
+    const q = Math.max(0, Math.floor(num($('fQty').value)));
+    $('fTotal').value = p ? kes(p.price * q) : '0';
+  }
+  async function loadMine(){
+    try{
+      const s = await getDocs(query(collection(db,'productsales'), where('technicianEmail','==',me.user.email)));
+      sales = s.docs.map(d => ({ id:d.id, ...d.data() }));
+    }catch(e){ console.error(e); toast('Could not load your sales', true); sales = []; }
+    sales.sort((a,b) => String(b.saleDate||'').localeCompare(String(a.saleDate||'')) || ((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0));
+    renderMine();
+  }
+  function renderMine(){
+    const ym = ymNow();
+    const mine = sales.filter(s => String(s.saleDate||'').slice(0,7) === ym);
+    const ok = mine.filter(s => s.status===APPROVED).reduce((t,s) => t+num(s.totalAmount),0);
+    const pe = mine.filter(s => s.status===PENDING).reduce((t,s) => t+num(s.totalAmount),0);
+    $('myApproved').textContent = 'KES '+kes(ok);
+    $('myPct').textContent = Math.round(ok/TARGET*100)+'%';
+    $('myPending').textContent = pe>0 ? 'KES '+kes(pe)+' awaiting approval' : '';
+    const okW = Math.min(100, ok/TARGET*100);
+    $('myBarOk').style.width = okW+'%';
+    $('myBarPend').style.width = Math.min(100, (ok+pe)/TARGET*100)+'%';
+    $('myCount').textContent = sales.length+' record'+(sales.length!==1?'s':'');
+    $('myBody').innerHTML = sales.length ? sales.map(s => '<tr><td style="white-space:nowrap">'+fDate(s.saleDate)+'</td><td class="td-name">'+esc(s.customerName)+'<div style="font-size:11px;color:var(--gray)">'+esc(s.customerPhone)+'</div></td><td>'+esc(s.jobRef)+'</td><td>'+esc(s.product)+'</td><td>'+esc(s.quantity)+'</td><td class="td-amount">'+kes(s.totalAmount)+'</td><td>'+badge(s.status)+'</td><td>'+esc(s.remarks||'--')+'</td></tr>').join('')
+      : '<tr class="empty-row"><td colspan="8">No product sales yet.</td></tr>';
+  }
+  async function submitSale(){
+    const cust = $('fCust').value.trim(), phone = $('fPhone').value.trim(), job = $('fJob').value.trim();
+    const date = $('fDate').value, prodName = $('fProduct').value, qty = Math.floor(num($('fQty').value));
+    const p = PRODUCTS.find(x => x.name === prodName);
+    if(!cust){ toast('Enter the customer name', true); return; }
+    if(!phone){ toast('Enter the customer phone number', true); return; }
+    if(!job){ toast('Enter the service or job reference', true); return; }
+    if(!date){ toast('Pick the date of sale', true); return; }
+    if(!p){ toast('Select the product sold', true); return; }
+    if(!(qty >= 1)){ toast('Quantity must be at least 1', true); return; }
+    const total = p.price * qty;
+    $('submitSale').disabled = true; $('submitSale').textContent = 'Submitting...';
+    try{
+      await addDoc(collection(db,'productsales'), {
+        customerName:cust, customerPhone:phone, jobRef:job, product:p.name, unitPrice:p.price, quantity:qty, totalAmount:total,
+        saleDate:date, technicianName:me.tech.name, technicianEmail:me.user.email, branch:me.tech.branch||'',
+        status:PENDING, remarks:'', createdAt:serverTimestamp()
+      });
+      ['fCust','fPhone','fJob'].forEach(id => { $(id).value = ''; });
+      $('fProduct').value = ''; $('fQty').value = '1'; $('fDate').value = todayISO(); calcTotal();
+      toast('Sale submitted. Awaiting admin approval.');
+      await loadMine();
+    }catch(e){ console.error(e); toast('Could not submit the sale. Try again.', true); }
+    $('submitSale').disabled = false; $('submitSale').textContent = 'Submit for Approval';
+  }
+
+  /* ================= ADMIN ================= */
+  async function startAdmin(){
+    $('aMonth').value = ymNow();
+    techs.sort((a,b) => String(a.name).localeCompare(String(b.name)));
+    techs.forEach(t => { const o = document.createElement('option'); o.value = t.name; o.textContent = t.name; $('aTech').appendChild(o); });
+    await loadAll();
+    ['aMonth','aBranch','aTech','aStatus'].forEach(id => $(id).addEventListener('change', () => { allPage = 1; renderAdmin(); }));
+    $('aAll').addEventListener('click', () => { $('aMonth').value = ''; allPage = 1; renderAdmin(); });
+    window.addEventListener('branchesLoaded', renderAdmin);
+    $('revClose').addEventListener('click', closeRev);
+    $('revModal').addEventListener('click', e => { if(e.target === $('revModal')) closeRev(); });
+    $('revApprove').addEventListener('click', () => decide(APPROVED));
+    $('revReject').addEventListener('click', () => decide(REJECTED));
+    document.addEventListener('click', e => {
+      const b = e.target.closest('[data-rev]');
+      if(b) openRev(b.getAttribute('data-rev'));
+    });
+  }
+  async function loadAll(){
+    try{
+      const s = await getDocs(collection(db,'productsales'));
+      sales = s.docs.map(d => ({ id:d.id, ...d.data() }));
+    }catch(e){ console.error(e); toast('Could not load product sales. Check the rules are published.', true); sales = []; }
+    sales.sort((a,b) => String(b.saleDate||'').localeCompare(String(a.saleDate||'')) || ((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0));
+    renderAdmin();
+  }
+  function baseFiltered(){
+    const br = $('aBranch').value, tc = $('aTech').value;
+    return sales.filter(s => (br==='all'||s.branch===br) && (tc==='all'||s.technicianName===tc));
+  }
+  function renderAdmin(){
+    const ym = $('aMonth').value, st = $('aStatus').value;
+    const base = baseFiltered();
+    const inMonth = base.filter(s => !ym || String(s.saleDate||'').slice(0,7) === ym);
+    const view = inMonth.filter(s => st==='all' || s.status===st);
+    const sum = (arr, f) => arr.reduce((t,s) => t + f(s), 0);
+    const ap = inMonth.filter(s => s.status===APPROVED), pe = inMonth.filter(s => s.status===PENDING), rj = inMonth.filter(s => s.status===REJECTED);
+    $('sUnits').textContent = sum(ap, s => num(s.quantity));
+    $('sAmt').textContent = kes(sum(ap, s => num(s.totalAmount)));
+    $('sPend').textContent = pe.length;
+    $('sPendAmt').textContent = 'KES '+kes(sum(pe, s => num(s.totalAmount)))+' awaiting';
+    $('sApp').textContent = ap.length;
+    $('sRej').textContent = rj.length;
+
+    // queue (all pending in branch/tech filter, any month)
+    const queue = base.filter(s => s.status===PENDING);
+    $('queueCount').textContent = queue.length+' pending';
+    $('queueBody').innerHTML = queue.length ? queue.map(s => '<tr><td style="white-space:nowrap">'+fDate(s.saleDate)+'</td><td class="td-name">'+esc(s.technicianName)+'</td><td>'+esc(s.customerName)+'</td><td>'+esc(s.jobRef)+'</td><td>'+esc(s.product)+'</td><td>'+esc(s.quantity)+'</td><td class="td-amount">'+kes(s.totalAmount)+'</td><td><button class="btn-apply" data-rev="'+esc(s.id)+'" style="padding:6px 12px;font-size:11px" type="button">Review</button></td></tr>').join('')
+      : '<tr class="empty-row"><td colspan="8">Nothing waiting for approval.</td></tr>';
+
+    // per technician KPI
+    const br = $('aBranch').value, tc = $('aTech').value;
+    const list = techs.filter(t => (br==='all'||t.branch===br) && (tc==='all'||t.name===tc));
+    const mine = t => inMonth.filter(s => (s.technicianEmail && t.email && s.technicianEmail===t.email) || s.technicianName===t.name);
+    let met = 0;
+    $('kpiCount').textContent = list.length+' technician'+(list.length!==1?'s':'');
+    $('kpiBody').innerHTML = list.length ? list.map(t => {
+      const m = mine(t), a = m.filter(s => s.status===APPROVED), p = m.filter(s => s.status===PENDING);
+      const av = sum(a, s => num(s.totalAmount)), pv = sum(p, s => num(s.totalAmount));
+      if(ym && av >= TARGET) met++;
+      const pct = Math.round(av/TARGET*100);
+      return '<tr><td class="td-name">'+esc(t.name)+'</td><td>'+esc(t.branch||'--')+'</td><td>'+sum(a, s => num(s.quantity))+'</td><td class="td-amount">'+kes(av)+'</td><td class="td-amount" style="color:#FBB724">'+kes(pv)+'</td><td>'+m.filter(s => s.status===REJECTED).length+'</td><td><div style="display:flex;align-items:center;gap:8px"><div class="ps-bar" style="flex:1"><i class="pend" style="width:'+Math.min(100,(av+pv)/TARGET*100)+'%"></i><i class="ok" style="width:'+Math.min(100,av/TARGET*100)+'%"></i></div><span style="font-size:12px;color:var(--text-dim);white-space:nowrap">'+pct+'%</span></div></td></tr>';
+    }).join('') : '<tr class="empty-row"><td colspan="7">No technicians match the filters.</td></tr>';
+    $('sMet').textContent = ym ? met : '--';
+    $('sMetSub').textContent = ym ? 'of '+list.length+' reached KES '+kes(TARGET) : 'Pick a month to see targets';
+
+    // monthly performance (last 6 months, respects branch/tech)
+    const months = [];
+    const d0 = new Date(); d0.setDate(1);
+    for(let i=0;i<6;i++){ const d = new Date(d0.getFullYear(), d0.getMonth()-i, 1); months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')); }
+    const rows = months.map(m => {
+      const x = base.filter(s => String(s.saleDate||'').slice(0,7) === m);
+      const a = x.filter(s => s.status===APPROVED);
+      return { m, units:sum(a, s => num(s.quantity)), ok:sum(a, s => num(s.totalAmount)), pe:sum(x.filter(s => s.status===PENDING), s => num(s.totalAmount)), n:x.length };
+    });
+    const mx = Math.max(1, ...rows.map(r => r.ok));
+    $('monthBody').innerHTML = rows.map(r => '<tr><td class="td-name">'+esc(ymLabel(r.m))+'</td><td>'+r.units+'</td><td class="td-amount">'+kes(r.ok)+'</td><td class="td-amount" style="color:#FBB724">'+kes(r.pe)+'</td><td>'+r.n+'</td><td style="width:180px"><div class="ps-bar"><i class="ok" style="width:'+(r.ok/mx*100)+'%"></i></div></td></tr>').join('');
+
+    // by product
+    $('prodBody').innerHTML = PRODUCTS.map(p => {
+      const a = ap.filter(s => s.product === p.name);
+      return '<tr><td class="td-name">'+esc(p.name)+'</td><td>KES '+kes(p.price)+'</td><td>'+sum(a, s => num(s.quantity))+'</td><td class="td-amount">'+kes(sum(a, s => num(s.totalAmount)))+'</td></tr>';
+    }).join('');
+
+    // all sales table
+    $('allCount').textContent = view.length+' record'+(view.length!==1?'s':'');
+    const pages = Math.max(1, Math.ceil(view.length/PER));
+    if(allPage > pages) allPage = pages;
+    const start = (allPage-1)*PER;
+    $('allBody').innerHTML = view.length ? view.slice(start, start+PER).map(s => '<tr class="clickable" data-rev="'+esc(s.id)+'"><td style="white-space:nowrap">'+fDate(s.saleDate)+'</td><td class="td-name">'+esc(s.technicianName)+'</td><td>'+esc(s.customerName)+'</td><td>'+esc(s.customerPhone)+'</td><td>'+esc(s.jobRef)+'</td><td>'+esc(s.product)+'</td><td>'+esc(s.quantity)+'</td><td class="td-amount">'+kes(s.totalAmount)+'</td><td>'+badge(s.status)+'</td><td>'+esc(s.remarks||'--')+'</td></tr>').join('')
+      : '<tr class="empty-row"><td colspan="10">No product sales for the selected filters.</td></tr>';
+    $('allInfo').textContent = view.length ? 'Showing '+(start+1)+' to '+Math.min(start+PER, view.length)+' of '+view.length : '';
+    const btns = $('allBtns'); btns.innerHTML = '';
+    if(pages > 1){
+      const mk = (label, dis, cls, fn) => { const b = document.createElement('button'); b.className = 'page-btn'+(cls?' '+cls:''); b.textContent = label; b.disabled = dis; b.addEventListener('click', fn); btns.appendChild(b); };
+      mk('Prev', allPage===1, '', () => { allPage--; renderAdmin(); });
+      for(let i=1;i<=pages;i++){ if(pages>7 && i>2 && i<pages-1 && Math.abs(i-allPage)>1) continue; mk(String(i), false, i===allPage?'active':'', () => { allPage = i; renderAdmin(); }); }
+      mk('Next', allPage===pages, '', () => { allPage++; renderAdmin(); });
+    }
+  }
+
+  function openRev(id){
+    active = sales.find(s => s.id === id);
+    if(!active) return;
+    const s = active;
+    $('revGrid').innerHTML = [['Technician',s.technicianName],['Branch',s.branch],['Customer',s.customerName],['Phone',s.customerPhone],['Job Ref',s.jobRef],['Date of Sale',fDate(s.saleDate)],['Product',s.product],['Quantity',s.quantity],['Unit Price','KES '+kes(s.unitPrice)],['Total','KES '+kes(s.totalAmount)],['Current Status',s.status||PENDING],['Reviewed By',s.reviewedBy||'--']]
+      .map(x => '<div class="m-item"><span>'+x[0]+'</span><b>'+esc(x[1]==null||x[1]===''?'--':x[1])+'</b></div>').join('');
+    $('revRemarks').value = s.remarks || '';
+    $('revModal').classList.add('open');
+  }
+  function closeRev(){ $('revModal').classList.remove('open'); active = null; }
+  async function decide(status){
+    if(!active) return;
+    const s = active;
+    if(status === REJECTED && !$('revRemarks').value.trim() && !window.confirm('Reject without a remark?')) return;
+    const upd = { status, remarks:$('revRemarks').value.trim(), reviewedBy:me.user.email, reviewedAt:serverTimestamp() };
+    $('revApprove').disabled = true; $('revReject').disabled = true;
+    try{
+      await updateDoc(doc(db,'productsales',s.id), upd);
+      Object.assign(s, upd, { reviewedAt:null });
+      toast('Sale '+status.toLowerCase());
+      closeRev();
+      renderAdmin();
+    }catch(e){ console.error(e); toast('Could not update the sale', true); }
+    $('revApprove').disabled = false; $('revReject').disabled = false;
+  }
+</script>
+
+<!-- SETTINGS INTEGRATION: profile photo, dynamic branches, preferences -->
+<script type="module">
+  import { getApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+  const app  = getApp();
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+  const DEFAULTS = ['Nairobi','Nakuru','Eldoret','Mombasa','Kisumu','Kitale','Ecolife'];
+  const ls = {
+    get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+    set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  };
+
+  function paintProfile(p, email){
+    if(!p) return;
+    const av = document.getElementById('userAvatar');
+    if(av){
+      if(p.photoURL){
+        av.style.backgroundImage = 'url("'+String(p.photoURL).replace(/"/g,'%22')+'")';
+        av.style.backgroundSize = 'cover';
+        av.style.backgroundPosition = 'center';
+        av.style.color = 'transparent';
+      }
+      const un = document.getElementById('userName');
+      if(un && p.displayName) un.textContent = p.displayName;
+    } else if(p.photoURL && document.getElementById('techNameBadge') && !document.getElementById('techPhoto')){
+      const img = document.createElement('img');
+      img.id = 'techPhoto';
+      img.src = p.photoURL;
+      img.alt = '';
+      img.style.cssText = 'width:30px;height:30px;border-radius:50%;object-fit:cover;border:1px solid rgba(0,230,118,0.35);margin-right:4px';
+      const badge = document.getElementById('techNameBadge');
+      badge.parentNode.insertBefore(img, badge);
+    }
+  }
+
+  function applyBranches(list){
+    window.__branches = list;
+    document.querySelectorAll('select').forEach(sel => {
+      const opts = Array.from(sel.options);
+      if(!opts.some(o => DEFAULTS.includes((o.value||o.text).trim()))) return;
+      const current = sel.value;
+      opts.forEach(o => { if(DEFAULTS.includes((o.value||o.text).trim())) o.remove(); });
+      list.forEach(n => {
+        const o = document.createElement('option');
+        o.value = n; o.textContent = n;
+        sel.appendChild(o);
+      });
+      if(Array.from(sel.options).some(o => o.value === current)) sel.value = current;
+    });
+    window.dispatchEvent(new Event('branchesLoaded'));
+  }
+
+  async function extendTechStrip(list){
+    const strip = document.querySelector('.summary-strip');
+    if(!strip || !document.getElementById('countNairobi')) return;
+    const extra = list.filter(n => !DEFAULTS.includes(n));
+    if(!extra.length) return;
+    try{
+      const s = await getDocs(collection(db,'technicians'));
+      const techs = s.docs.map(d => d.data());
+      extra.forEach(n => {
+        const d = document.createElement('div');
+        d.className = 'strip-item';
+        const a = document.createElement('span'); a.className = 'strip-label'; a.textContent = n;
+        const b = document.createElement('span'); b.className = 'strip-value'; b.textContent = techs.filter(t => t.branch === n).length;
+        d.appendChild(a); d.appendChild(b);
+        strip.appendChild(d);
+      });
+    }catch(e){ console.error(e); }
+  }
+
+  async function loadBranches(){
+    try{
+      const s = await getDocs(collection(db,'branches'));
+      const rows = s.docs.map(d => d.data()).filter(b => b && b.name && b.active !== false);
+      if(!rows.length) return;
+      rows.sort((a,b) => (a.order||0)-(b.order||0) || String(a.name).localeCompare(String(b.name)));
+      const list = rows.map(b => b.name);
+      applyBranches(list);
+      extendTechStrip(list);
+    }catch(e){ console.error('Branches not loaded, using defaults', e); }
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if(!user) return;
+    const email = (user.email||'').toLowerCase();
+    const cached = ls.get('ecolife_profile_'+email);
+    if(cached){ try{ paintProfile(JSON.parse(cached), email); }catch(e){} }
+    try{
+      const s = await getDoc(doc(db,'profiles',email));
+      if(s.exists()){
+        const p = s.data();
+        ls.set('ecolife_profile_'+email, JSON.stringify({photoURL:p.photoURL||'', displayName:p.displayName||''}));
+        paintProfile(p, email);
+        setTimeout(() => paintProfile(p, email), 1500);
+      }
+    }catch(e){ console.error('Profile not loaded', e); }
+    loadBranches();
+  });
+</script>
+
+</body>
+</html>
